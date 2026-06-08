@@ -1,73 +1,83 @@
-# Take-home task: splitting a valve flow sweep
+# Technical task: splitting a valve recording into arcs
 
-Thanks for taking the time to do this. We expect it to take roughly two to four
-hours. It is deliberately open-ended in places — we are more interested in how
-you reason about messy real data than in a perfect answer.
+Thanks for taking the time to do this. We are more interested in how you reason
+about messy real data than in a perfect answer, so please don't over-invest —
+something that works and that you can explain is exactly what we are after.
 
-## Background (no valve knowledge needed)
+## Background
 
-One of the tests on our valve rig sweeps a moving part (the "spool") across its
-full travel while measuring the resulting oil flow. For each sample we record
-two numbers:
+One of our machines performs a routine where a valve is moved while its linear
+position and flow rate are measured continuously. This produces a stream of
+position and flow readings that, when plotted against each other, form a
+figure-of-eight shape. The routine is run twice in succession, with the second
+pass producing a similar figure-of-eight but with inverted flow values. You are
+given the full recording as a single continuous dataset.
 
-- `normalised_position` — where the spool is, and
-- `flow` — the flow at that instant.
+## The task
 
-If you plot `flow` against `normalised_position` you get a characteristic shape:
-two active flow "lobes", one either side, separated by a central band where the
-spool is near its null point and almost no flow passes. We call that central
-near-zero band the **deadband**. The two boundaries of the deadband — where flow
-lifts off from zero on each side — are physically the most important feature of
-the test.
+Take the raw data and split it into four arcs — two from each pass. Each arc
+should represent one lobe of a figure-of-eight.
 
-You are given six real sweeps in `data/` (`sweep_01.json` … `sweep_06.json`).
-They are genuine rig outputs, so they vary: some are clean and roughly centred,
-others drift, overshoot, are noisy, or are shifted well off to one side. A good
-solution should cope with all of them, not just the tidy ones.
+### Splitting logic
 
-## Your task
+The split point for each figure-of-eight is at the minimum flow region: the area
+where the two lobes of the eight meet. Because of noise, the flow reaches its
+minimum across a range of position values rather than at a single clean point.
+Determine the split point using the median position value within that low-flow
+region.
 
-Write a function that takes one sweep and splits its samples into three groups:
+### Arc structure
 
-- `left` — the flow lobe on the low-position side,
-- `deadband` — the central near-zero-flow band, and
-- `right` — the flow lobe on the high-position side.
+The machine can begin recording at any point along a pass (at positive flow), so
+the raw data will not necessarily start or end at a split point. After splitting,
+join any partial segments so that each of the four arcs is contiguous and:
 
-```python
-def split_sweep(position: list[float], flow: list[float]) -> dict[str, list[int]]:
-    """Return {"left": [...], "deadband": [...], "right": [...]},
-    where each value is a list of integer indices into the input lists."""
-```
+- starts at the centre position (minimum flow region),
+- rises to peak flow and position (roughly the middle of the arc),
+- returns to the centre position.
 
-Then, as the headline result, report the two **deadband edge positions** for each
-sweep — the `normalised_position` at which flow leaves the deadband on the left
-and on the right.
+In other words, every arc should share its two tails with the minimum flow
+region, with the highest flow values sitting in the middle of the arc.
+
+## Requirements
+
+- Use Python. You may use any libraries you like (NumPy, Pandas, SciPy,
+  Matplotlib).
+- Produce a visualisation of the data before and after the split so your result
+  can be verified.
+- Keep your code readable and well-commented. We value clarity over cleverness.
+- A Jupyter notebook is perfectly fine.
+
+## Assumptions
+
+- Each data file contains two passes (one normal, one flow-inverted), giving four
+  arcs in total.
+- "Minimum flow" refers to the lowest flow values in each pass.
+- You do not need to label or classify the arcs — just split, restructure and
+  visualise.
+
+## Tips
+
+- Start by visualising and understanding the shape of the raw data.
+- Think about edge cases: what if the recording starts or ends outside the
+  minimum flow region?
+- There is no single correct threshold for defining minimum flow.
+- Focus on something that works and that you can justify. It does not have to be
+  perfect.
 
 ## What we provide
 
-- `data/` — the six sweep files.
-- `sweep_tools.py` — `load_sweep(path)` returns aligned `(position, flow)` lists,
-  and `plot_split(...)` will draw a sweep and colour your segments. Use, change,
-  or ignore these as you like. (Plotting needs `matplotlib`; the loader does not.)
+- `data/` — six recordings (`sweep_01.json` … `sweep_06.json`). A good solution
+  should cope with the awkward ones, not only the tidy ones.
+- `sweep_tools.py` — `load_recording(path)` returns aligned
+  `(position, flow, timestamp)` lists, and `plot_arcs(...)` will draw a recording
+  and colour a set of arcs you pass in. Use, change or ignore these as you like.
+  (Plotting needs `matplotlib`; the loader does not.)
 
 ## What to hand back
 
 1. Your code, runnable, with a short note on how to run it.
-2. A figure per sweep showing your split (the helper makes this easy), or an
-   equivalent way for us to see your result on all six.
-3. A short write-up (half a page is plenty) covering:
-   - the idea behind your method and why you chose it,
-   - which sweeps it handles well and which it struggles with, and how you know,
-   - what you would do with more time.
-
-## How we will assess it
-
-- **Robustness first.** Does it hold up across the varied sweeps, including the
-  awkward ones? A method that is simple but degrades gracefully beats a clever
-  one that breaks silently.
-- **Reasoning.** Do your choices make sense, and do you understand your method's
-  failure modes? Being honest about where it breaks scores well.
-- **Clarity.** Readable, sensibly structured code and a clear write-up.
-
-You may use any standard Python libraries. There is no hidden "correct" answer —
-show us how you think.
+2. Before/after visualisations across the recordings.
+3. A short write-up (half a page is plenty): the idea behind your method, which
+   recordings it handles well and where it struggles, and what you would do with
+   more time.
