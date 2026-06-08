@@ -1,0 +1,10 @@
+# Interviewer-only — keep the answer key and file mapping out of the issued repo
+RUBRIC.md
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+.env
