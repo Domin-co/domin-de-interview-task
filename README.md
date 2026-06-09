@@ -72,7 +72,16 @@ region, with the highest flow values sitting in the middle of the arc.
 - `sweep_tools.py` — `load_recording(path)` returns aligned
   `(position, flow, timestamp)` lists, and `plot_arcs(...)` will draw a recording
   and colour a set of arcs you pass in. Use, change or ignore these as you like.
-  (Plotting needs `matplotlib`; the loader does not.)
+  (`load_recording` needs only the standard library; `plot_arcs` requires `matplotlib`.)
+
+## Example
+
+The image below shows what a correct result looks like, produced on synthetic
+data (not one of the task files). Left: the raw recording as given. Right: the
+same data split into four contiguous arcs, each running centre → peak → centre.
+The ★ marks the start of each arc.
+
+![Illustrative example on synthetic data](example/target_example.png)
 
 ## What to hand back
 

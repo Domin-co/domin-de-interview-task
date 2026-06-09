@@ -1,5 +1,7 @@
-# Interviewer-only — keep the answer key and file mapping out of the issued repo
+# Interviewer-only — keep answer key, generator and working notes out of the issued repo
 RUBRIC.md
+PROGRESS.md
+make_example.py
 
 # Python
 __pycache__/
